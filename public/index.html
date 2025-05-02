@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Realtime Chat</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+    }
+    #chat {
+      display: none;
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow-y: scroll;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #f9f9f9;
+    }
+    .message {
+      margin: 0.5rem 0;
+    }
+    .username {
+      font-weight: bold;
+    }
+    .timestamp {
+      color: #888;
+      font-size: 0.8em;
+      float: right;
+    }
+    .system {
+      color: gray;
+      font-style: italic;
+      text-align: center;
+    }
+    #emoji-picker {
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Realtime Chat 🚀</h1>
+
+  <div id="usernameForm">
+    <label>Enter your username:</label>
+    <input type="text" id="usernameInput" />
+    <button onclick="joinChat()">Join</button>
+  </div>
+
+  <div id="user-list">
+    <h4>Online Users:</h4>
+    <ul id="users"></ul>
+  </div>
+
+  <div id="chatSection" style="display:none;">
+    <div id="chat"></div>
+    <div id="typingIndicator" style="font-style: italic; color: gray; margin-top: 5px;"></div>
+
+    <input type="text" id="messageInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="clearChat()">Clear (dev)</button>
+    <div id="emoji-picker"></div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script>
+  <script>
+    let socket;
+    let username = '';
+    let typingTimeout;
+
+    function joinChat() {
+      username = document.getElementById('usernameInput').value.trim();
+      if (!username) return alert('Please enter a username');
+
+      socket = io();
+
+      socket.on('connect', () => {
+        socket.emit('join', username);
+      });
+
+      socket.on('userList', (usernames) => {
+        const userList = document.getElementById('users');
+        userList.innerHTML = '';
+        usernames.forEach((username) => {
+          const li = document.createElement('li');
+          li.textContent = username;
+          userList.appendChild(li);
+        });
+      });
+
+      socket.on('receiveMessage', ({ sender, message, time }) => {
+        appendMessage(`<b>${sender}</b>: ${message} <span class="timestamp">${time}</span>`);
+      });
+
+      socket.on('systemMessage', (msg) => {
+        appendMessage(`👋 ${msg}`, true);
+      });
+
+      socket.on('typing', ({ username }) => {
+        const typingDiv = document.getElementById('typingIndicator');
+        typingDiv.textContent = `${username} is typing...`;
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => typingDiv.textContent = '', 2000);
+      });
+
+      socket.on('messageHistory', (messages) => {
+        messages.forEach(({ sender, message, time }) => {
+          appendMessage(`<b>${sender}</b>: ${message} <span class="timestamp">${time}</span>`);
+        });
+      });
+
+      document.getElementById('usernameForm').style.display = 'none';
+      document.getElementById('chatSection').style.display = 'block';
+      document.getElementById('chat').style.display = 'block';
+    }
+
+    const messageInput = document.getElementById('messageInput');
+    messageInput.addEventListener('input', () => {
+      socket.emit('typing', { username });
+    });
+
+    function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+      socket.emit('sendMessage', { username, message });
+      messageInput.value = '';
+    }
+
+    function clearChat() {
+      document.getElementById('chat').innerHTML = '';
+    }
+
+    function appendMessage(html, isSystem = false) {
+      const chat = document.getElementById('chat');
+      document.getElementById('typingIndicator').textContent = '';
+      const div = document.createElement('div');
+      div.className = isSystem ? 'message system' : 'message';
+      div.innerHTML = html;
+      chat.appendChild(div);
+      if (chat.scrollTop + chat.clientHeight >= chat.scrollHeight - 50) {
+        chat.scrollTop = chat.scrollHeight;
+      }
+    }
+
+    // Emoji picker
+    const picker = new EmojiButton({ position: 'top-start' });
+    picker.on('emoji', emoji => {
+      messageInput.value += emoji;
+      messageInput.focus();
+    });
+
+    const emojiBtn = document.createElement('button');
+    emojiBtn.textContent = '😀';
+    emojiBtn.onclick = () => picker.togglePicker(emojiBtn);
+    document.getElementById('emoji-picker').appendChild(emojiBtn);
+  </script>
+</body>
+</html>
