@@ -1,4 +1,3 @@
-// src/chat.gateway.ts
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -19,7 +18,7 @@ interface ClientData {
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server; // Use definite assignment (!) to avoid constructor requirement
 
   private clients = new Map<string, ClientData>();
 
