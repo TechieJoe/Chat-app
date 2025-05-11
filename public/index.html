@@ -2,20 +2,74 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Realtime Chat</title>
   <style>
+    * { box-sizing: border-box; }
     body {
       font-family: sans-serif;
-      max-width: 600px;
-      margin: 2rem auto;
+      margin: 0;
+      padding: 0;
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100vh;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    header {
+      text-align: center;
+    }
+    #usernameForm {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    #usernameForm input {
+      flex: 1 1 200px;
+      padding: 0.5rem;
+    }
+    #usernameForm button {
+      flex: 0 0 auto;
+      padding: 0.5rem 1rem;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      overflow: hidden;
+    }
+    #user-list {
+      flex: 0;
+    }
+    #user-list h4 {
+      margin: 0 0 0.5rem;
+    }
+    #user-list ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #chatSection {
+      display: none;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
     }
     #chat {
-      display: none;
+      flex: 1;
       border: 1px solid #ccc;
-      height: 400px;
-      overflow-y: scroll;
       padding: 1rem;
-      margin-bottom: 1rem;
+      overflow-y: auto;
       background: #f9f9f9;
     }
     .message {
@@ -34,33 +88,64 @@
       font-style: italic;
       text-align: center;
     }
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .input-group input {
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 0.5rem;
+    }
+    .input-group button {
+      flex: 0 0 auto;
+      padding: 0.5rem 1rem;
+    }
     #emoji-picker {
       margin-top: 0.5rem;
+    }
+    @media (min-width: 768px) {
+      .main-content {
+        flex-direction: row;
+      }
+      #user-list {
+        width: 25%;
+        overflow-y: auto;
+      }
+      #chatSection {
+        width: 75%;
+        display: flex !important;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Realtime Chat 🚀</h1>
-
-  <div id="usernameForm">
-    <label>Enter your username:</label>
-    <input type="text" id="usernameInput" />
-    <button onclick="joinChat()">Join</button>
-  </div>
-
-  <div id="user-list">
-    <h4>Online Users:</h4>
-    <ul id="users"></ul>
-  </div>
-
-  <div id="chatSection" style="display:none;">
-    <div id="chat"></div>
-    <div id="typingIndicator" style="font-style: italic; color: gray; margin-top: 5px;"></div>
-
-    <input type="text" id="messageInput" placeholder="Type a message..." />
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="clearChat()">Clear (dev)</button>
-    <div id="emoji-picker"></div>
+  <div class="chat-container">
+    <header>
+      <h1>Realtime Chat 🚀</h1>
+    </header>
+    <div id="usernameForm">
+      <input type="text" id="usernameInput" placeholder="Enter your username" />
+      <button onclick="joinChat()">Join</button>
+    </div>
+    <div class="main-content">
+      <div id="user-list">
+        <h4>Online Users:</h4>
+        <ul id="users"></ul>
+      </div>
+      <div id="chatSection">
+        <div id="chat"></div>
+        <div id="typingIndicator" style="font-style: italic; color: gray;
+ margin-top: 5px;"></div>
+        <div class="input-group">
+          <input type="text" id="messageInput" placeholder="Type a message..." />
+          <button onclick="sendMessage()">Send</button>
+          <button onclick="clearChat()">Clear</button>
+        </div>
+        <div id="emoji-picker"></div>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -91,7 +176,7 @@
       });
 
       socket.on('receiveMessage', ({ sender, message, time }) => {
-        appendMessage(`<b>${sender}</b>: ${message} <span class="timestamp">${time}</span>`);
+        appendMessage(`<b>${sender}</b>: ${message} <span class=\"timestamp\">${time}</span>`);
       });
 
       socket.on('systemMessage', (msg) => {
@@ -107,12 +192,12 @@
 
       socket.on('messageHistory', (messages) => {
         messages.forEach(({ sender, message, time }) => {
-          appendMessage(`<b>${sender}</b>: ${message} <span class="timestamp">${time}</span>`);
+          appendMessage(`<b>${sender}</b>: ${message} <span class=\"timestamp\">${time}</span>`);
         });
       });
 
       document.getElementById('usernameForm').style.display = 'none';
-      document.getElementById('chatSection').style.display = 'block';
+      document.getElementById('chatSection').style.display = 'flex';
       document.getElementById('chat').style.display = 'block';
     }
 
