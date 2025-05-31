@@ -71,22 +71,47 @@
       padding: 1rem;
       overflow-y: auto;
       background: #f9f9f9;
+      min-height: 200px;
+      max-height: 60vh;
+      scroll-behavior: smooth;
     }
     .message {
-      margin: 0.5rem 0;
+      margin: 1rem 0;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      word-break: break-word;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
     }
     .username {
       font-weight: bold;
+      margin-right: 0.5rem;
+      border-radius: 4px;
+      padding: 0 0.4em;
+      /* Color will be set inline */
+    }
+    .my-message {
+      background: #e0f7fa;
+      align-self: flex-end;
+    }
+    .other-message {
+      background: #f1f8e9;
+      align-self: flex-start;
     }
     .timestamp {
       color: #888;
       font-size: 0.8em;
-      float: right;
+      margin-left: auto;
+      align-self: flex-end;
     }
     .system {
       color: gray;
       font-style: italic;
       text-align: center;
+      background: none !important;
+      padding: 0 !important;
+      margin: 1rem 0 !important;
     }
     .input-group {
       display: flex;
@@ -136,8 +161,7 @@
       </div>
       <div id="chatSection">
         <div id="chat"></div>
-        <div id="typingIndicator" style="font-style: italic; color: gray;
- margin-top: 5px;"></div>
+        <div id="typingIndicator" style="font-style: italic; color: gray; margin-top: 5px;"></div>
         <div class="input-group">
           <input type="text" id="messageInput" placeholder="Type a message..." />
           <button onclick="sendMessage()">Send</button>
@@ -155,6 +179,19 @@
     let username = '';
     let typingTimeout;
 
+    // Utility to assign a color based on username
+    function getUsernameColor(name) {
+      const colors = [
+        '#e57373', '#64b5f6', '#81c784', '#ffd54f', '#ba68c8',
+        '#4db6ac', '#ff8a65', '#a1887f', '#90a4ae', '#f06292'
+      ];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return colors[Math.abs(hash) % colors.length];
+    }
+
     function joinChat() {
       username = document.getElementById('usernameInput').value.trim();
       if (!username) return alert('Please enter a username');
@@ -168,42 +205,47 @@
       socket.on('userList', (usernames) => {
         const userList = document.getElementById('users');
         userList.innerHTML = '';
-        usernames.forEach((username) => {
+        usernames.forEach((uname) => {
           const li = document.createElement('li');
-          li.textContent = username;
+          li.textContent = uname;
+          li.style.color = getUsernameColor(uname);
           userList.appendChild(li);
         });
       });
 
       socket.on('receiveMessage', ({ sender, message, time }) => {
-        appendMessage(`<b>${sender}</b>: ${message} <span class=\"timestamp\">${time}</span>`);
+        appendMessage(sender, message, time);
       });
 
       socket.on('systemMessage', (msg) => {
-        appendMessage(`👋 ${msg}`, true);
+        appendMessage(null, `👋 ${msg}`, null, true);
       });
 
-      socket.on('typing', ({ username }) => {
+      socket.on('typing', ({ username: typingUser }) => {
         const typingDiv = document.getElementById('typingIndicator');
-        typingDiv.textContent = `${username} is typing...`;
+        typingDiv.textContent = `${typingUser} is typing...`;
         clearTimeout(typingTimeout);
         typingTimeout = setTimeout(() => typingDiv.textContent = '', 2000);
       });
 
       socket.on('messageHistory', (messages) => {
         messages.forEach(({ sender, message, time }) => {
-          appendMessage(`<b>${sender}</b>: ${message} <span class=\"timestamp\">${time}</span>`);
+          appendMessage(sender, message, time);
         });
       });
 
       document.getElementById('usernameForm').style.display = 'none';
       document.getElementById('chatSection').style.display = 'flex';
       document.getElementById('chat').style.display = 'block';
+      setTimeout(() => {
+        const chat = document.getElementById('chat');
+        chat.scrollTop = chat.scrollHeight;
+      }, 100);
     }
 
     const messageInput = document.getElementById('messageInput');
     messageInput.addEventListener('input', () => {
-      socket.emit('typing', { username });
+      if (socket) socket.emit('typing', { username });
     });
 
     function sendMessage() {
@@ -217,16 +259,38 @@
       document.getElementById('chat').innerHTML = '';
     }
 
-    function appendMessage(html, isSystem = false) {
+    // Improved appendMessage to handle colors and spacing
+    function appendMessage(sender, message, time, isSystem = false) {
       const chat = document.getElementById('chat');
       document.getElementById('typingIndicator').textContent = '';
       const div = document.createElement('div');
-      div.className = isSystem ? 'message system' : 'message';
-      div.innerHTML = html;
-      chat.appendChild(div);
-      if (chat.scrollTop + chat.clientHeight >= chat.scrollHeight - 50) {
-        chat.scrollTop = chat.scrollHeight;
+      if (isSystem) {
+        div.className = 'message system';
+        div.innerHTML = message;
+      } else {
+        const isMine = sender === username;
+        div.className = 'message ' + (isMine ? 'my-message' : 'other-message');
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'username';
+        nameSpan.textContent = sender;
+        nameSpan.style.background = getUsernameColor(sender);
+        nameSpan.style.color = '#fff';
+        div.appendChild(nameSpan);
+
+        const msgSpan = document.createElement('span');
+        msgSpan.innerHTML = message;
+        div.appendChild(msgSpan);
+
+        if (time) {
+          const timeSpan = document.createElement('span');
+          timeSpan.className = 'timestamp';
+          timeSpan.textContent = time;
+          div.appendChild(timeSpan);
+        }
       }
+      chat.appendChild(div);
+      // Always scroll to bottom
+      chat.scrollTop = chat.scrollHeight;
     }
 
     // Emoji picker
