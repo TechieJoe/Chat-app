@@ -259,7 +259,7 @@
       document.getElementById('chat').innerHTML = '';
     }
 
-    // Improved appendMessage to handle colors and spacing
+    // Improved appendMessage to show username above the message
     function appendMessage(sender, message, time, isSystem = false) {
       const chat = document.getElementById('chat');
       document.getElementById('typingIndicator').textContent = '';
@@ -270,29 +270,37 @@
       } else {
         const isMine = sender === username;
         div.className = 'message ' + (isMine ? 'my-message' : 'other-message');
+        
+        // Username on top
+        const nameRow = document.createElement('div');
+        nameRow.style.display = 'flex';
+        nameRow.style.alignItems = 'center';
         const nameSpan = document.createElement('span');
         nameSpan.className = 'username';
         nameSpan.textContent = sender;
         nameSpan.style.background = getUsernameColor(sender);
         nameSpan.style.color = '#fff';
-        div.appendChild(nameSpan);
-
-        const msgSpan = document.createElement('span');
-        msgSpan.innerHTML = message;
-        div.appendChild(msgSpan);
+        nameRow.appendChild(nameSpan);
 
         if (time) {
           const timeSpan = document.createElement('span');
           timeSpan.className = 'timestamp';
           timeSpan.textContent = time;
-          div.appendChild(timeSpan);
+          nameRow.appendChild(timeSpan);
         }
+
+        div.appendChild(nameRow);
+
+        // Message below username
+        const msgSpan = document.createElement('div');
+        msgSpan.style.marginTop = '0.25em';
+        msgSpan.innerHTML = message;
+        div.appendChild(msgSpan);
       }
       chat.appendChild(div);
       // Always scroll to bottom
       chat.scrollTop = chat.scrollHeight;
     }
-
     // Emoji picker
     const picker = new EmojiButton({ position: 'top-start' });
     picker.on('emoji', emoji => {
