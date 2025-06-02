@@ -1,65 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-<style>
-  .message {
-    position: relative;
-    margin: 1rem 0;
-    padding: 0.5rem 0.75rem;
-    border-radius: 16px;
-    word-break: break-word;
-    display: flex;
-    flex-direction: column;
-    max-width: 60%;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  }
-  .my-message {
-    background: #e0f7fa;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-  }
-  .my-message::after {
-    content: "";
-    position: absolute;
-    right: -10px;
-    bottom: 8px;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #e0f7fa;
-    border-left: 10px solid transparent;
-    border-right: 0 solid transparent;
-  }
-  .other-message {
-    background: #f1f8e9;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-  }
-  .other-message::after {
-    content: "";
-    position: absolute;
-    left: -10px;
-    bottom: 8px;
-    width: 0;
-    height: 0;
-    border-top: 10px solid #f1f8e9;
-    border-right: 10px solid transparent;
-    border-left: 0 solid transparent;
-  }
-  .system {
-    box-shadow: none !important;
-    background: none !important;
-  }
-</style>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Realtime Chat</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { margin: 0; padding: 0; }
+
     .chat-container {
       display: flex;
       flex-direction: column;
@@ -69,9 +18,9 @@
       padding: 1rem;
       gap: 1rem;
     }
-    header {
-      text-align: center;
-    }
+
+    header { text-align: center; }
+
     #usernameForm {
       display: flex;
       flex-wrap: wrap;
@@ -79,14 +28,17 @@
       justify-content: center;
       margin-bottom: 1rem;
     }
+
     #usernameForm input {
       flex: 1 1 200px;
       padding: 0.5rem;
     }
+
     #usernameForm button {
       flex: 0 0 auto;
       padding: 0.5rem 1rem;
     }
+
     .main-content {
       flex: 1;
       display: flex;
@@ -94,12 +46,15 @@
       gap: 1rem;
       overflow: hidden;
     }
+
     #user-list {
       flex: 0;
     }
+
     #user-list h4 {
       margin: 0 0 0.5rem;
     }
+
     #user-list ul {
       list-style: none;
       padding-left: 0;
@@ -107,12 +62,14 @@
       max-height: 200px;
       overflow-y: auto;
     }
+
     #chatSection {
       display: none;
       flex: 1;
       flex-direction: column;
       gap: 0.5rem;
     }
+
     #chat {
       flex: 1;
       border: 1px solid #ccc;
@@ -123,23 +80,61 @@
       max-height: 60vh;
       scroll-behavior: smooth;
     }
+
     .message {
+      position: relative;
       margin: 1rem 0;
       padding: 0.5rem 0.75rem;
-      border-radius: 8px;
+      border-radius: 16px;
       word-break: break-word;
       display: flex;
       flex-direction: column;
       max-width: 60%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     }
+
     .my-message {
       background: #e0f7fa;
       align-self: flex-end;
+      border-bottom-right-radius: 4px;
     }
+
+    .my-message::after {
+      content: "";
+      position: absolute;
+      right: -10px;
+      bottom: 8px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid #e0f7fa;
+      border-left: 10px solid transparent;
+    }
+
     .other-message {
       background: #f1f8e9;
       align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
+
+    .other-message::after {
+      content: "";
+      position: absolute;
+      left: -10px;
+      bottom: 8px;
+      width: 0;
+      height: 0;
+      border-top: 10px solid #f1f8e9;
+      border-right: 10px solid transparent;
+    }
+
+    .system {
+      background: none !important;
+      text-align: center;
+      font-style: italic;
+      color: gray;
+      box-shadow: none !important;
+    }
+
     .username {
       font-weight: bold;
       margin-bottom: 0.2rem;
@@ -149,45 +144,45 @@
       color: #fff;
       font-size: 0.85rem;
     }
+
     .timestamp {
       color: #888;
       font-size: 0.75em;
       margin-top: 0.3rem;
       align-self: flex-end;
     }
-    .system {
-      color: gray;
-      font-style: italic;
-      text-align: center;
-      background: none !important;
-      padding: 0 !important;
-      margin: 1rem 0 !important;
-    }
+
     .input-group {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
+
     .input-group input {
       flex: 1 1 0;
       min-width: 0;
       padding: 0.5rem;
     }
+
     .input-group button {
       flex: 0 0 auto;
       padding: 0.5rem 1rem;
     }
+
     #emoji-picker {
       margin-top: 0.5rem;
     }
+
     @media (min-width: 768px) {
       .main-content {
         flex-direction: row;
       }
+
       #user-list {
         width: 25%;
         overflow-y: auto;
       }
+
       #chatSection {
         width: 75%;
         display: flex !important;
@@ -211,7 +206,7 @@
       </div>
       <div id="chatSection">
         <div id="chat"></div>
-        <div id="typingIndicator" style="font-style: italic; color: gray; margin-top: 5px;"></div>
+        <div id="typingIndicator" style="font-style: italic; color: gray;"></div>
         <div class="input-group">
           <input type="text" id="messageInput" placeholder="Type a message..." />
           <button onclick="sendMessage()">Send</button>
@@ -286,18 +281,14 @@
       document.getElementById('usernameForm').style.display = 'none';
       document.getElementById('chatSection').style.display = 'flex';
       document.getElementById('chat').style.display = 'block';
-      setTimeout(() => {
-        const chat = document.getElementById('chat');
-        chat.scrollTop = chat.scrollHeight;
-      }, 100);
     }
 
-    const messageInput = document.getElementById('messageInput');
-    messageInput.addEventListener('input', () => {
+    document.getElementById('messageInput').addEventListener('input', () => {
       if (socket) socket.emit('typing', { username });
     });
 
     function sendMessage() {
+      const messageInput = document.getElementById('messageInput');
       const message = messageInput.value.trim();
       if (!message) return;
       socket.emit('sendMessage', { username, message });
@@ -315,7 +306,7 @@
 
       if (isSystem) {
         div.className = 'message system';
-        div.innerHTML = message;
+        div.textContent = message;
       } else {
         const isMine = sender === username;
         div.className = 'message ' + (isMine ? 'my-message' : 'other-message');
@@ -337,20 +328,20 @@
           div.appendChild(timeSpan);
         }
       }
+
       chat.appendChild(div);
       chat.scrollTop = chat.scrollHeight;
     }
 
     const picker = new EmojiButton({ position: 'top-start' });
     picker.on('emoji', emoji => {
-      messageInput.value += emoji;
-      messageInput.focus();
+      const input = document.getElementById('messageInput');
+      input.value += emoji;
     });
 
-    const emojiBtn = document.createElement('button');
-    emojiBtn.textContent = '😀';
-    emojiBtn.onclick = () => picker.togglePicker(emojiBtn);
-    document.getElementById('emoji-picker').appendChild(emojiBtn);
+    document.getElementById('messageInput').addEventListener('focus', () => {
+      picker.togglePicker(document.getElementById('emoji-picker'));
+    });
   </script>
 </body>
 </html>
